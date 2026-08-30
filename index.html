@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAL Limanı — Sunucu Kiralama & Topluluk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --bg: #0a0a0c;
+  --bg-raised: #131316;
+  --bg-panel: #1a1a1e;
+  --line: #2a2a2f;
+  --text: #e9e9ec;
+  --text-dim: #8f8f98;
+  --fire: #e8382b;
+  --fire-dim: #a82a20;
+  --gold: #cfa347;
+  --live: #34d17c;
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:inherit; text-decoration:none;}
+ul{list-style:none;}
+img{max-width:100%; display:block;}
+:focus-visible{outline:2px solid var(--fire); outline-offset:3px;}
+
+.container{max-width:1180px; margin:0 auto; padding:0 24px;}
+
+/* ---------- Top ticker ---------- */
+.ticker{
+  background:var(--bg-raised);
+  border-bottom:1px solid var(--line);
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--text-dim);
+  overflow:hidden;
+  white-space:nowrap;
+  padding:7px 0;
+}
+.ticker-track{
+  display:inline-flex;
+  gap:48px;
+  animation: scroll-ticker 28s linear infinite;
+  padding-left:100%;
+}
+.ticker-track span{display:inline-flex; align-items:center; gap:8px;}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--live); display:inline-block; box-shadow:0 0 6px var(--live);}
+.dot.busy{background:var(--gold); box-shadow:0 0 6px var(--gold);}
+@keyframes scroll-ticker{
+  0%{transform:translateX(0);}
+  100%{transform:translateX(-100%);}
+}
+@media (prefers-reduced-motion: reduce){
+  .ticker-track{animation:none; padding-left:0;}
+}
+
+/* ---------- Header / Mega menu ---------- */
+header{
+  position:sticky; top:0; z-index:100;
+  background:rgba(10,10,12,0.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-row{
+  display:flex; align-items:center; justify-content:space-between;
+  height:68px;
+}
+.brand{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:24px;
+  letter-spacing:0.5px;
+  display:flex; align-items:center; gap:10px;
+}
+.brand .mark{
+  width:30px; height:30px;
+  background:linear-gradient(135deg, var(--fire), var(--fire-dim));
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  display:inline-block;
+}
+.brand .accent{color:var(--fire);}
+
+nav.main-nav{display:flex; gap:4px;}
+nav.main-nav > ul{display:flex; gap:4px;}
+.nav-item{position:relative;}
+.nav-item > a{
+  display:flex; align-items:center; gap:6px;
+  padding:10px 16px;
+  font-family:var(--font-display);
+  font-size:16px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  color:var(--text);
+  border-radius:6px;
+  transition:background 0.15s ease, color 0.15s ease;
+}
+.nav-item > a:hover, .nav-item > a[aria-expanded="true"]{
+  background:var(--bg-panel);
+  color:var(--fire);
+}
+.caret{width:9px; height:9px; border-right:2px solid currentColor; border-bottom:2px solid currentColor; transform:rotate(45deg); margin-top:-3px; transition:transform 0.15s ease;}
+.nav-item > a[aria-expanded="true"] .caret{transform:rotate(225deg); margin-top:3px;}
+
+.mega{
+  position:absolute; top:calc(100% + 12px); left:50%;
+  transform:translateX(-50%);
+  width:560px;
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-top:2px solid var(--fire);
+  border-radius:10px;
+  padding:22px;
+  display:none;
+  grid-template-columns:1fr 1fr;
+  gap:6px 28px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.55);
+}
+.nav-item.open .mega{display:grid;}
+.mega a{
+  display:block;
+  padding:10px 12px;
+  border-radius:7px;
+  transition:background 0.15s ease;
+}
+.mega a:hover{background:var(--bg-panel);}
+.mega .item-title{
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:16px;
+  color:var(--text);
+}
+.mega .item-desc{
+  font-size:12.5px;
+  color:var(--text-dim);
+  margin-top:2px;
+}
+.mega-foot{
+  grid-column:1 / -1;
+  margin-top:6px; padding-top:14px;
+  border-top:1px solid var(--line);
+  font-size:12px;
+  color:var(--text-dim);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.mega-foot .cta{color:var(--fire); font-weight:600;}
+
+.nav-cta{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:15px;
+  padding:10px 20px;
+  background:var(--fire);
+  color:#fff;
+  border-radius:7px;
+  letter-spacing:0.3px;
+  transition:background 0.15s ease, transform 0.15s ease;
+}
+.nav-cta:hover{background:var(--fire-dim); transform:translateY(-1px);}
+
+.hamburger{display:none; flex-direction:column; gap:5px; background:none; border:0; cursor:pointer; padding:6px;}
+.hamburger span{width:22px; height:2px; background:var(--text);}
+
+/* ---------- Hero ---------- */
+.hero{
+  padding:88px 0 76px;
+  position:relative;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.hero::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(600px 300px at 85% -10%, rgba(232,56,43,0.16), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 64px);
+  pointer-events:none;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns:1.15fr 0.85fr;
+  gap:48px;
+  align-items:center;
+  position:relative;
+}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--fire);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  display:flex; align-items:center; gap:8px;
+  margin-bottom:18px;
+}
+.eyebrow .dot{width:7px; height:7px;}
+h1.hero-title{
+  font-family:var(--font-display);
+  font-size:64px;
+  font-weight:800;
+  line-height:0.98;
+  letter-spacing:-0.5px;
+  margin-bottom:20px;
+}
+h1.hero-title .line2{color:var(--fire);}
+.hero-sub{
+  font-size:17px;
+  color:var(--text-dim);
+  max-width:480px;
+  margin-bottom:32px;
+}
+.hero-actions{display:flex; gap:14px; margin-bottom:40px;}
+.btn{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:16px;
+  padding:14px 26px;
+  border-radius:8px;
+  letter-spacing:0.3px;
+  transition:transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn-primary{background:var(--fire); color:#fff;}
+.btn-primary:hover{background:var(--fire-dim); transform:translateY(-2px);}
+.btn-ghost{border:1px solid var(--line); color:var(--text);}
+.btn-ghost:hover{border-color:var(--fire); color:var(--fire);}
+
+.stat-row{display:flex; gap:36px;}
+.stat b{
+  display:block;
+  font-family:var(--font-display);
+  font-size:28px;
+  font-weight:700;
+}
+.stat span{font-size:12px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.5px;}
+
+/* Live server panel (signature element) */
+.panel{
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 30px 70px rgba(0,0,0,0.5);
+}
+.panel-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-panel);
+}
+.panel-head span{font-family:var(--font-mono); font-size:12px; color:var(--text-dim);}
+.panel-head .live-tag{
+  display:flex; align-items:center; gap:6px;
+  font-family:var(--font-mono); font-size:11px; color:var(--live);
+  text-transform:uppercase; letter-spacing:1px;
+}
+.server-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px;
+  border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.server-row:last-child{border-bottom:none;}
+.server-name{font-family:var(--font-display); font-weight:600; font-size:15px;}
+.server-map{color:var(--text-dim); font-family:var(--font-mono); font-size:11.5px;}
+.server-ping{font-family:var(--font-mono); font-size:12px;}
+.ping-good{color:var(--live);}
+.ping-ok{color:var(--gold);}
+.slots{
+  font-family:var(--font-mono); font-size:12px; color:var(--text-dim);
+  min-width:52px; text-align:right;
+}
+
+/* ---------- Section shell ---------- */
+section{padding:88px 0;}
+.section-head{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  margin-bottom:44px; gap:24px; flex-wrap:wrap;
+}
+.section-eyebrow{
+  font-family:var(--font-mono); font-size:12px; color:var(--fire);
+  text-transform:uppercase; letter-spacing:2px; margin-bottom:10px;
+}
+h2.section-title{
+  font-family:var(--font-display);
+  font-size:38px; font-weight:700; letter-spacing:-0.3px;
+}
+.section-desc{color:var(--text-dim); max-width:440px; font-size:15px;}
+
+/* ---------- Sunucu kiralama grid ---------- */
+.plan-grid{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:18px;
+}
+.plan-card{
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:26px 22px;
+  display:flex; flex-direction:column;
+  transition:border-color 0.15s ease, transform 0.15s ease;
+}
+.plan-card:hover{border-color:var(--fire-dim); transform:translateY(-4px);}
+.plan-card.featured{
+  border-color:var(--fire);
+  background:linear-gradient(180deg, rgba(232,56,43,0.08), var(--bg-raised) 40%);
+  position:relative;
+}
+.plan-tag{
+  position:absolute; top:-11px; right:20px;
+  background:var(--fire); color:#fff;
+  font-family:var(--font-mono); font-size:10px; letter-spacing:1px;
+  text-transform:uppercase;
+  padding:4px 10px; border-radius:4px;
+}
+.plan-mode{
+  font-family:var(--font-mono); font-size:11px; color:var(--text-dim);
+  text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;
+}
+.plan-name{
+  font-family:var(--font-display); font-size:23px; font-weight:700;
+  margin-bottom:14px;
+}
+.plan-price{font-family:var(--font-display); font-size:32px; font-weight:800; margin-bottom:4px;}
+.plan-price span{font-size:14px; color:var(--text-dim); font-family:var(--font-body); font-weight:400;}
+.plan-features{margin:20px 0 24px; font-size:13.5px; color:var(--text-dim); display:flex; flex-direction:column; gap:9px;}
+.plan-features li{display:flex; align-items:center; gap:8px;}
+.plan-features li::before{content:"—"; color:var(--fire);}
+.plan-card .btn{justify-content:center; margin-top:auto;}
+
+/* ---------- Forum / Mod / Boost - 3 col feature band ---------- */
+.feature-band{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:18px;
+}
+.feature-card{
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:28px;
+}
+.feature-icon{
+  width:42px; height:42px;
+  border-radius:9px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:18px;
+  color:var(--fire);
+  font-family:var(--font-display); font-weight:700; font-size:18px;
+}
+.feature-card h3{
+  font-family:var(--font-display); font-size:20px; font-weight:700; margin-bottom:8px;
+}
+.feature-card p{color:var(--text-dim); font-size:14px; margin-bottom:18px;}
+.feature-link{font-size:13px; font-weight:600; color:var(--fire); display:inline-flex; align-items:center; gap:6px;}
+
+/* ---------- CTA band ---------- */
+.cta-band{
+  background:var(--bg-raised);
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  padding:70px 0;
+  text-align:center;
+}
+.cta-band h2{
+  font-family:var(--font-display); font-size:36px; font-weight:800; margin-bottom:14px;
+}
+.cta-band p{color:var(--text-dim); max-width:520px; margin:0 auto 30px;}
+.cta-band .hero-actions{justify-content:center;}
+
+/* ---------- Footer ---------- */
+footer{padding:64px 0 32px; background:var(--bg);}
+.footer-grid{
+  display:grid;
+  grid-template-columns:1.4fr 1fr 1fr 1fr;
+  gap:32px;
+  padding-bottom:44px;
+  border-bottom:1px solid var(--line);
+}
+.footer-brand p{color:var(--text-dim); font-size:13.5px; margin-top:14px; max-width:260px;}
+.footer-col h4{
+  font-family:var(--font-display); font-size:15px; font-weight:600;
+  text-transform:uppercase; letter-spacing:0.8px; color:var(--text-dim); margin-bottom:16px;
+}
+.footer-col ul{display:flex; flex-direction:column; gap:11px;}
+.footer-col a{font-size:14px; color:var(--text); transition:color 0.15s ease;}
+.footer-col a:hover{color:var(--fire);}
+.footer-bottom{
+  padding-top:24px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:12.5px; color:var(--text-dim); flex-wrap:wrap; gap:12px;
+}
+.footer-social{display:flex; gap:14px;}
+.footer-social a{
+  width:34px; height:34px; border:1px solid var(--line); border-radius:7px;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+  transition:border-color 0.15s ease, color 0.15s ease;
+}
+.footer-social a:hover{border-color:var(--fire); color:var(--fire);}
+
+/* ---------- Cookie / notice ---------- */
+.cookie-bar{
+  position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+  width:min(560px, calc(100% - 32px));
+  background:var(--bg-raised);
+  border:1px solid var(--line);
+  border-top:2px solid var(--fire);
+  border-radius:12px;
+  padding:18px 20px;
+  display:flex; align-items:center; gap:16px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.55);
+  z-index:200;
+  transition:transform 0.3s ease, opacity 0.3s ease;
+}
+.cookie-bar.hidden{transform:translate(-50%, 140%); opacity:0; pointer-events:none;}
+.cookie-bar p{font-size:13px; color:var(--text-dim); flex:1;}
+.cookie-bar .btn{padding:9px 16px; font-size:13px; white-space:nowrap;}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 980px){
+  nav.main-nav, .nav-cta{display:none;}
+  .hamburger{display:flex;}
+  .hero-grid{grid-template-columns:1fr;}
+  h1.hero-title{font-size:44px;}
+  .plan-grid{grid-template-columns:repeat(2, 1fr);}
+  .feature-band{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width: 560px){
+  .plan-grid{grid-template-columns:1fr;}
+  .footer-grid{grid-template-columns:1fr;}
+  .stat-row{flex-wrap:wrap; gap:20px;}
+  h1.hero-title{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-track">
+    <span><i class="dot"></i> Zombie Plague #1 — 24/32 oyuncu — de_dust2_2x2</span>
+    <span><i class="dot busy"></i> Pro Pub #3 — 28/32 oyuncu — dolu</span>
+    <span><i class="dot"></i> Surf Arena — 12/24 oyuncu</span>
+    <span><i class="dot"></i> JailBreak #2 — 19/28 oyuncu</span>
+    <span><i class="dot"></i> Yeni klan forumu açıldı: Kızıl Şahinler</span>
+    <span><i class="dot"></i> Zombie Plague #1 — 24/32 oyuncu — de_dust2_2x2</span>
+    <span><i class="dot busy"></i> Pro Pub #3 — 28/32 oyuncu — dolu</span>
+    <span><i class="dot"></i> Surf Arena — 12/24 oyuncu</span>
+  </div>
+</div>
+
+<header>
+  <div class="container nav-row">
+    <a href="#" class="brand"><span class="mark"></span>VAL <span class="accent">Limanı</span></a>
+
+    <nav class="main-nav">
+      <ul>
+        <li class="nav-item">
+          <a href="#kiralama" aria-expanded="false">Sunucu Kirala <i class="caret"></i></a>
+          <div class="mega">
+            <a href="#kiralama"><div class="item-title">Zombie Plague</div><div class="item-desc">32 slot, otomatik kurulum, anlık aktivasyon</div></a>
+            <a href="#kiralama"><div class="item-title">Pro Pub</div><div class="item-desc">Rekabetçi topluluk sunucusu altyapısı</div></a>
+            <a href="#kiralama"><div class="item-title">JailBreak</div><div class="item-desc">Rol tabanlı mod desteğiyle hazır şablon</div></a>
+            <a href="#kiralama"><div class="item-title">Surf Arena</div><div class="item-desc">Düşük ping odaklı harita rotasyonu</div></a>
+            <div class="mega-foot"><span>10 saniyede otomatik kurulum</span><a href="#kiralama" class="cta">Tüm paketler →</a></div>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="#forum" aria-expanded="false">Kiralık Forum <i class="caret"></i></a>
+          <div class="mega">
+            <a href="#forum"><div class="item-title">Klan Özel Odaları</div><div class="item-desc">Kendi topluluğun için kapalı forum alanı</div></a>
+            <a href="#forum"><div class="item-title">Genel Tartışma</div><div class="item-desc">Camiaya açık duyuru ve tartışma panosu</div></a>
+            <a href="#forum"><div class="item-title">Turnuva Panosu</div><div class="item-desc">Eşleşme ve sonuç takibi</div></a>
+            <a href="#forum"><div class="item-title">Destek Merkezi</div><div class="item-desc">Sunucu ve hesap destek talepleri</div></a>
+            <div class="mega-foot"><span>Klan başına özel alan</span><a href="#forum" class="cta">Forumu incele →</a></div>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="#magaza" aria-expanded="false">Mod Mağazası <i class="caret"></i></a>
+          <div class="mega">
+            <a href="#magaza"><div class="item-title">AMXX Eklentileri</div><div class="item-desc">Admin, istatistik ve harita rotasyonu modülleri</div></a>
+            <a href="#magaza"><div class="item-title">Skin Paketleri</div><div class="item-desc">Performans dostu, düşük poligonlu skinler</div></a>
+            <a href="#magaza"><div class="item-title">HUD Temaları</div><div class="item-desc">Özel arayüz ve gösterge paketleri</div></a>
+            <a href="#magaza"><div class="item-title">Ses Paketleri</div><div class="item-desc">Alternatif bildirim ve efekt sesleri</div></a>
+            <div class="mega-foot"><span>Tüm modlar test edilmiştir</span><a href="#magaza" class="cta">Mağazaya git →</a></div>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a href="#boost" aria-expanded="false">Premium Boost <i class="caret"></i></a>
+          <div class="mega">
+            <a href="#boost"><div class="item-title">MasterServer Listeleme</div><div class="item-desc">Sunucunu öne çıkan listede göster</div></a>
+            <a href="#boost"><div class="item-title">Öne Çıkan Rozet</div><div class="item-desc">Forum ve sunucu listesinde özel rozet</div></a>
+            <a href="#boost"><div class="item-title">Haftalık Reklam Alanı</div><div class="item-desc">Ana sayfada haftalık görünürlük</div></a>
+            <div class="mega-foot"><span>Aylık ve haftalık planlar</span><a href="#boost" class="cta">Planları gör →</a></div>
+          </div>
+        </li>
+      </ul>
+    </nav>
+
+    <a href="#kiralama" class="nav-cta">Sunucu Kirala</a>
+    <button class="hamburger" aria-label="Menüyü aç"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="eyebrow"><i class="dot"></i> 6 sunucu şu anda aktif</div>
+      <h1 class="hero-title">Kendi CS 1.6<br><span class="line2">sunucunu dakikalar içinde ayağa kaldır.</span></h1>
+      <p class="hero-sub">Zombie Plague'den JailBreak'e, otomatik kurulum ve klan forumuyla birlikte gelen sunucu kiralama altyapısı. Ödemeyi yap, sunucun devreye girsin.</p>
+      <div class="hero-actions">
+        <a href="#kiralama" class="btn btn-primary">Sunucu Kirala →</a>
+        <a href="#" class="btn btn-ghost" id="downloadBtn">CS 1.6 VALauncher İndir</a>
+        <a href="#forum" class="btn btn-ghost">Forumu Gez</a>
+      </div>
+      <div class="stat-row">
+        <div class="stat"><b>6</b><span>Aktif Sunucu</span></div>
+        <div class="stat"><b>140+</b><span>Kayıtlı Klan</span></div>
+        <div class="stat"><b>10sn</b><span>Otomatik Kurulum</span></div>
+        <div class="stat"><b>%99.9</b><span>Uptime</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span>CANLI SUNUCU DURUMU</span>
+        <span class="live-tag"><i class="dot"></i> live</span>
+      </div>
+      <div class="server-row">
+        <div>
+          <div class="server-name">Zombie Plague #1</div>
+          <div class="server-map">de_dust2_2x2</div>
+        </div>
+        <div class="server-ping ping-good">18ms</div>
+        <div class="slots">24/32</div>
+      </div>
+      <div class="server-row">
+        <div>
+          <div class="server-name">Pro Pub #3</div>
+          <div class="server-map">de_inferno</div>
+        </div>
+        <div class="server-ping ping-ok">34ms</div>
+        <div class="slots">28/32</div>
+      </div>
+      <div class="server-row">
+        <div>
+          <div class="server-name">JailBreak #2</div>
+          <div class="server-map">jail_ameno</div>
+        </div>
+        <div class="server-ping ping-good">21ms</div>
+        <div class="slots">19/28</div>
+      </div>
+      <div class="server-row">
+        <div>
+          <div class="server-name">Surf Arena</div>
+          <div class="server-map">surf_beginner</div>
+        </div>
+        <div class="server-ping ping-good">15ms</div>
+        <div class="slots">12/24</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="kiralama">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-eyebrow">Sunucu Kiralama</div>
+        <h2 class="section-title">Moduna uygun paketi seç</h2>
+        <p class="section-desc">Tüm paketlerde otomatik kurulum, panel erişimi ve 7/24 çalışma garantisi var.</p>
+      </div>
+    </div>
+
+    <div class="plan-grid">
+      <div class="plan-card">
+        <div class="plan-mode">Zombie Plague</div>
+        <div class="plan-name">Başlangıç</div>
+        <div class="plan-price">₺149<span>/ay</span></div>
+        <ul class="plan-features">
+          <li>16 slot</li>
+          <li>2 GB RAM</li>
+          <li>Otomatik yeniden başlatma</li>
+          <li>Temel AMXX eklenti seti</li>
+        </ul>
+        <a href="#" class="btn btn-ghost">Kirala</a>
+      </div>
+
+      <div class="plan-card featured">
+        <div class="plan-tag">En Popüler</div>
+        <div class="plan-mode">Pro Pub</div>
+        <div class="plan-name">Topluluk</div>
+        <div class="plan-price">₺289<span>/ay</span></div>
+        <ul class="plan-features">
+          <li>32 slot</li>
+          <li>4 GB RAM</li>
+          <li>MasterServer listeleme dahil</li>
+          <li>Klan forum alanı hediye</li>
+          <li>Öncelikli destek</li>
+        </ul>
+        <a href="#" class="btn btn-primary">Kirala</a>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-mode">JailBreak</div>
+        <div class="plan-name">Klan</div>
+        <div class="plan-price">₺389<span>/ay</span></div>
+        <ul class="plan-features">
+          <li>28 slot</li>
+          <li>6 GB RAM</li>
+          <li>Rol modu eklentileri</li>
+          <li>Admin paneli</li>
+        </ul>
+        <a href="#" class="btn btn-ghost">Kirala</a>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-mode">Surf Arena</div>
+        <div class="plan-name">Rekabetçi</div>
+        <div class="plan-price">₺499<span>/ay</span></div>
+        <ul class="plan-features">
+          <li>24 slot, düşük gecikme</li>
+          <li>8 GB RAM</li>
+          <li>Özel harita rotasyonu</li>
+          <li>Turnuva panosu erişimi</li>
+        </ul>
+        <a href="#" class="btn btn-ghost">Kirala</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="forum" style="background:var(--bg-raised); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-eyebrow">Topluluk</div>
+        <h2 class="section-title">Forum, mağaza ve premium boost</h2>
+        <p class="section-desc">Sunucunu kiralayan her klan, kendi forum alanına ve mağaza avantajlarına otomatik olarak sahip olur.</p>
+      </div>
+    </div>
+
+    <div class="feature-band">
+      <div class="feature-card">
+        <div class="feature-icon">01</div>
+        <h3>Kiralık Forum</h3>
+        <p>Klanına özel kapalı oda, genel tartışma panosu ve turnuva takip alanı. Sunucu kiralayan klanlara ilk ay ücretsiz.</p>
+        <a href="#" class="feature-link">Forumu incele →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">02</div>
+        <h3>Mod Mağazası</h3>
+        <p>Test edilmiş AMXX eklentileri, performans dostu skin paketleri ve HUD temaları. Tek tıkla sunucuna kurulur.</p>
+        <a href="#" class="feature-link">Mağazaya git →</a>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">03</div>
+        <h3>Premium Boost</h3>
+        <p>MasterServer'da öne çıkan listeleme, forumda özel rozet ve haftalık reklam alanı ile sunucunun görünürlüğünü artır.</p>
+        <a href="#" class="feature-link">Planları gör →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container">
+    <h2>Klanını dakikalar içinde kurmaya hazır mısın?</h2>
+    <p>Paketini seç, ödemeni yap, sunucun otomatik olarak devreye girsin. Kurulum sonrası forum alanın da seninle gelir.</p>
+    <div class="hero-actions">
+      <a href="#kiralama" class="btn btn-primary">Sunucu Kirala →</a>
+      <a href="#forum" class="btn btn-ghost">Forumu Gez</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="brand"><span class="mark"></span>VAL <span class="accent">Limanı</span></a>
+        <p>CS 1.6 klanları için sunucu kiralama, forum ve topluluk altyapısı. Otomatik kurulum, 7/24 destek.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Sunucu Kirala</h4>
+        <ul>
+          <li><a href="#kiralama">Zombie Plague</a></li>
+          <li><a href="#kiralama">Pro Pub</a></li>
+          <li><a href="#kiralama">JailBreak</a></li>
+          <li><a href="#kiralama">Surf Arena</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Topluluk</h4>
+        <ul>
+          <li><a href="#forum">Kiralık Forum</a></li>
+          <li><a href="#magaza">Mod Mağazası</a></li>
+          <li><a href="#boost">Premium Boost</a></li>
+          <li><a href="#">Destek Merkezi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kurumsal</h4>
+        <ul>
+          <li><a href="#">Hakkımızda</a></li>
+          <li><a href="#">Kullanım Şartları</a></li>
+          <li><a href="#">Gizlilik</a></li>
+          <li><a href="#">İletişim</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 VAL Limanı. Tüm hakları saklıdır.</span>
+      <div class="footer-social">
+        <a href="#" aria-label="Discord">D</a>
+        <a href="#" aria-label="YouTube">Y</a>
+        <a href="#" aria-label="X">X</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="cookie-bar" id="cookieBar">
+  <p>Sitede deneyimini iyileştirmek için çerezler kullanıyoruz. Devam ederek çerez politikamızı kabul etmiş olursun.</p>
+  <a href="#" class="btn btn-primary" id="cookieAccept">Kabul Et</a>
+</div>
+
+<script>
+// Mega menu: click-to-toggle (works for touch + mouse), closes on outside click
+document.querySelectorAll('.nav-item').forEach(item => {
+  const link = item.querySelector('a');
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.nav-item.open').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('a').setAttribute('aria-expanded', 'false');
+    });
+    if(!isOpen){
+      item.classList.add('open');
+      link.setAttribute('aria-expanded', 'true');
+    }
+  });
+});
+document.addEventListener('click', (e) => {
+  if(!e.target.closest('.nav-item')){
+    document.querySelectorAll('.nav-item.open').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('a').setAttribute('aria-expanded', 'false');
+    });
+  }
+});
+
+// Cookie bar
+const cookieBar = document.getElementById('cookieBar');
+const cookieAccept = document.getElementById('cookieAccept');
+if(!sessionStorage.getItem('cookieAccepted')){
+  // shown by default
+} else {
+  cookieBar.classList.add('hidden');
+}
+cookieAccept.addEventListener('click', (e) => {
+  e.preventDefault();
+  cookieBar.classList.add('hidden');
+  sessionStorage.setItem('cookieAccepted', '1');
+});
+
+// Mobile hamburger -> simple toggle of main nav as a stacked list
+const hamburger = document.querySelector('.hamburger');
+const mainNav = document.querySelector('.main-nav');
+hamburger.addEventListener('click', () => {
+  const willShow = mainNav.style.display !== 'flex';
+  mainNav.style.display = willShow ? 'flex' : 'none';
+  mainNav.style.position = 'absolute';
+  mainNav.style.top = '68px';
+  mainNav.style.left = '0';
+  mainNav.style.right = '0';
+  mainNav.style.background = 'var(--bg-raised)';
+  mainNav.style.flexDirection = 'column';
+  mainNav.style.padding = '12px';
+  mainNav.style.borderBottom = '1px solid var(--line)';
+});
+</script>
+
+</body>
+</html>
